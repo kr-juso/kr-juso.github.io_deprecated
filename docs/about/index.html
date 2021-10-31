@@ -21,7 +21,7 @@
 <link rel="icon" href="/favicon.png" type="image/x-icon">
 <link rel="stylesheet" href="/book.min.89a77f7e702a8626749b948bbfb01109823daf6c1246ca407d1378833494c402.css" integrity="sha256-iad/fnAqhiZ0m5SLv7ARCYI9r2wSRspAfRN4gzSUxAI=" crossorigin="anonymous">
   <script defer src="/flexsearch.min.js"></script>
-  <script defer src="/en.search.min.0c6b229cec367fab2108ec4701e6f7e719362a4fbdaa800c3c5a7170ddf6e94c.js" integrity="sha256-DGsinOw2f6shCOxHAeb35xk2Kk&#43;9qoAMPFpxcN326Uw=" crossorigin="anonymous"></script>
+  <script defer src="/en.search.min.a509600c3ddeee6d6cc6a944e3630d375bafb6aaf4f8582bab1d79ce1559f8c2.js" integrity="sha256-pQlgDD3e7m1sxqlE42MNN1uvtqr0&#43;Fgrqx15zhVZ&#43;MI=" crossorigin="anonymous"></script>
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LG37WEQMB4"></script>
 <script>
@@ -145,26 +145,38 @@ https://github.com/alex-shpak/hugo-book
 <li><a href="#headline-1">사용법</a>
 <ul>
 <li><a href="#headline-2">코드 체계 설명</a>
-</li>
-<li><a href="#headline-3">HTTP 호출</a>
 <ul>
-<li><a href="#headline-4">예제</a>
+<li><a href="#headline-3">파라메터</a>
 <ul>
-<li><a href="#headline-5">대한민국의 모든 특별/광역시, 도 반환</a>
+<li><a href="#headline-4">regcode_pattern</a>
 </li>
-<li><a href="#headline-6">서울특별시 소속의 모든 구, 동을 반환</a>
-</li>
-<li><a href="#headline-7">서울특별시 소속의 모든 구 반환</a>
-</li>
-<li><a href="#headline-8">서울특별시 종로구의 모든 동 반환</a>
+<li><a href="#headline-5">is_ignore_zero</a>
 </li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#headline-9">gRPC 호출</a>
+<li><a href="#headline-6">HTTP 호출</a>
 <ul>
-<li><a href="#headline-10">사용법</a>
+<li><a href="#headline-7">예제</a>
+<ul>
+<li><a href="#headline-8">대한민국의 모든 특별/광역시, 도 반환</a>
+</li>
+<li><a href="#headline-9">서울특별시 소속의 모든 구, 동을 반환</a>
+</li>
+<li><a href="#headline-10">서울특별시 소속의 모든 구 반환</a>
+</li>
+<li><a href="#headline-11">서울특별시 종로구를 포함한 종로구의 모든 동 반환</a>
+</li>
+<li><a href="#headline-12">서울특별시 종로구의 모든 동&#34;만&#34; 반환</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#headline-13">gRPC 호출</a>
+<ul>
+<li><a href="#headline-14">사용법</a>
 </li>
 </ul>
 </li>
@@ -189,7 +201,7 @@ https://github.com/alex-shpak/hugo-book
 </h2>
 <div id="outline-text-headline-1" class="outline-text-2">
 <p>
-법정동 목록 API는 GCP의 Cloud Run 환경 위에서 동작합니다. 기본적으로 gRPC 서버와 ESPv2 기반 프록시 서버가 함께 동작합니다. API 주소는 <a href="https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app">grpc-proxy-server-mkvo6j4wsq-du.a.run.app</a> 입니다. 모든 동작은 <a href="https://github.com/kr-juso/protobuf">proto 프로젝트</a>에 정의된 내용에 기반하여 동작합니다.</p>
+법정동 목록 API는 GCP의 Cloud Run 환경 위에서 동작합니다. 기본적으로 gRPC 서버와 ESPv2 기반 프록시 서버가 함께 동작합니다. API 주소는 <a href="https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app">grpc-proxy-server-mkvo6j4wsq-du.a.run.app</a> 입니다. 모든 동작은 <a href="https://github.com/kr-juso/protobuf/tree/main/juso">proto 프로젝트</a>에 정의된 내용에 기반하여 동작합니다.</p>
 <div id="outline-container-headline-2" class="outline-3">
 <h3 id="headline-2">
 코드 체계 설명
@@ -199,55 +211,90 @@ https://github.com/alex-shpak/hugo-book
 법정동 목록 조회 API는 법정동코드를 기반으로 동작합니다.</p>
 <p>
 법정동코드는 총 10자리로 구성되어 있으며 오른쪽부터 두자리씩 잘라 분류를 나누고 있습니다. 예를 들어 서울특별시의 코드는 <code>1100000000</code> 이며, 서울특별시에 속한 모든 구는 <code>11??000000</code> 형식을 띄고 있습니다. 이 API는 이러한 코드체계의 특성을 이용하여 <a href="https://ko.wikipedia.org/wiki/%EC%99%80%EC%9D%BC%EB%93%9C%EC%B9%B4%EB%93%9C_%EB%AC%B8%EC%9E%90">wildcard</a> 구문을 지원하여 원하는 목록을 반환할 수 있습니다.</p>
-</div>
-</div>
-<div id="outline-container-headline-3" class="outline-3">
-<h3 id="headline-3">
-HTTP 호출
-</h3>
-<div id="outline-text-headline-3" class="outline-text-3">
-<div id="outline-container-headline-4" class="outline-4">
-<h4 id="headline-4">
-예제
+<div id="outline-container-headline-3" class="outline-4">
+<h4 id="headline-3">
+파라메터
 </h4>
-<div id="outline-text-headline-4" class="outline-text-4">
+<div id="outline-text-headline-3" class="outline-text-4">
+<div id="outline-container-headline-4" class="outline-5">
+<h5 id="headline-4">
+regcode_pattern
+</h5>
+<div id="outline-text-headline-4" class="outline-text-5">
+<p><code>string</code> 타입, 검색하고자 하는 코드 패턴을 입력합니다. 예를 들어 모든 특별/광역시(도)를 조회하려면 <code>*00000000</code> 파라메터를 입력합니다.</p>
+</div>
+</div>
 <div id="outline-container-headline-5" class="outline-5">
 <h5 id="headline-5">
-대한민국의 모든 특별/광역시, 도 반환
+is_ignore_zero
 </h5>
 <div id="outline-text-headline-5" class="outline-text-5">
+<p><code>boolean</code> 타입, regcode_pattern 파라메터만 사용할 경우 발생하는 문제점을 해결하고자 추가된 파라메터입니다.</p>
+<p>
+예를 들어 종로구의 모든 동을 조회하려면 <code>regcode_pattern</code> 값이 <code>1111*</code> 형태를 띄게 될텐데 이 경우 서울특별시 종로구(<code>1111000000</code>)도 함께 조회가 됩니다. 종로구 그 자체가 아닌 종로구 소속만 조회하고 싶을 경우엔 is_ignore_zero 파라메터값을 <code>true</code> 로 설정하여 API를 호출합니다.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-6" class="outline-3">
+<h3 id="headline-6">
+HTTP 호출
+</h3>
+<div id="outline-text-headline-6" class="outline-text-3">
+<div id="outline-container-headline-7" class="outline-4">
+<h4 id="headline-7">
+예제
+</h4>
+<div id="outline-text-headline-7" class="outline-text-4">
+<div id="outline-container-headline-8" class="outline-5">
+<h5 id="headline-8">
+대한민국의 모든 특별/광역시, 도 반환
+</h5>
+<div id="outline-text-headline-8" class="outline-text-5">
 <div class="src src-text">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=*00000000</code></pre></div>
 </div>
 </div>
 </div>
-<div id="outline-container-headline-6" class="outline-5">
-<h5 id="headline-6">
+<div id="outline-container-headline-9" class="outline-5">
+<h5 id="headline-9">
 서울특별시 소속의 모든 구, 동을 반환
 </h5>
-<div id="outline-text-headline-6" class="outline-text-5">
+<div id="outline-text-headline-9" class="outline-text-5">
 <div class="src src-text">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=11*</code></pre></div>
 </div>
 </div>
 </div>
-<div id="outline-container-headline-7" class="outline-5">
-<h5 id="headline-7">
+<div id="outline-container-headline-10" class="outline-5">
+<h5 id="headline-10">
 서울특별시 소속의 모든 구 반환
 </h5>
-<div id="outline-text-headline-7" class="outline-text-5">
+<div id="outline-text-headline-10" class="outline-text-5">
 <div class="src src-text">
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=11*000000</code></pre></div>
 </div>
 </div>
 </div>
-<div id="outline-container-headline-8" class="outline-5">
-<h5 id="headline-8">
-서울특별시 종로구의 모든 동 반환
+<div id="outline-container-headline-11" class="outline-5">
+<h5 id="headline-11">
+서울특별시 종로구를 포함한 종로구의 모든 동 반환
 </h5>
-<div id="outline-text-headline-8" class="outline-text-5">
+<div id="outline-text-headline-11" class="outline-text-5">
 <div class="src src-text">
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=111101*</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=1111*</code></pre></div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-12" class="outline-5">
+<h5 id="headline-12">
+서울특별시 종로구의 모든 동&#34;만&#34; 반환
+</h5>
+<div id="outline-text-headline-12" class="outline-text-5">
+<div class="src src-text">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=1111*&amp;is_ignore_zero=true</code></pre></div>
 </div>
 </div>
 </div>
@@ -255,16 +302,16 @@ HTTP 호출
 </div>
 </div>
 </div>
-<div id="outline-container-headline-9" class="outline-3">
-<h3 id="headline-9">
+<div id="outline-container-headline-13" class="outline-3">
+<h3 id="headline-13">
 gRPC 호출
 </h3>
-<div id="outline-text-headline-9" class="outline-text-3">
-<div id="outline-container-headline-10" class="outline-4">
-<h4 id="headline-10">
+<div id="outline-text-headline-13" class="outline-text-3">
+<div id="outline-container-headline-14" class="outline-4">
+<h4 id="headline-14">
 사용법
 </h4>
-<div id="outline-text-headline-10" class="outline-text-4">
+<div id="outline-text-headline-14" class="outline-text-4">
 <p>proto파일을 구현한 client를 이용해 호출합니다.</p>
 <p>
 대상 주소는 <a href="grpc-proxy-server-mkvo6j4wsq-du.a.run.app">grpc-proxy-server-mkvo6j4wsq-du.a.run.app</a> 이며, 별도 인증은 필요하지 않습니다.</p>
@@ -318,26 +365,38 @@ gRPC 호출
 <li><a href="#headline-1">사용법</a>
 <ul>
 <li><a href="#headline-2">코드 체계 설명</a>
-</li>
-<li><a href="#headline-3">HTTP 호출</a>
 <ul>
-<li><a href="#headline-4">예제</a>
+<li><a href="#headline-3">파라메터</a>
 <ul>
-<li><a href="#headline-5">대한민국의 모든 특별/광역시, 도 반환</a>
+<li><a href="#headline-4">regcode_pattern</a>
 </li>
-<li><a href="#headline-6">서울특별시 소속의 모든 구, 동을 반환</a>
-</li>
-<li><a href="#headline-7">서울특별시 소속의 모든 구 반환</a>
-</li>
-<li><a href="#headline-8">서울특별시 종로구의 모든 동 반환</a>
+<li><a href="#headline-5">is_ignore_zero</a>
 </li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#headline-9">gRPC 호출</a>
+<li><a href="#headline-6">HTTP 호출</a>
 <ul>
-<li><a href="#headline-10">사용법</a>
+<li><a href="#headline-7">예제</a>
+<ul>
+<li><a href="#headline-8">대한민국의 모든 특별/광역시, 도 반환</a>
+</li>
+<li><a href="#headline-9">서울특별시 소속의 모든 구, 동을 반환</a>
+</li>
+<li><a href="#headline-10">서울특별시 소속의 모든 구 반환</a>
+</li>
+<li><a href="#headline-11">서울특별시 종로구를 포함한 종로구의 모든 동 반환</a>
+</li>
+<li><a href="#headline-12">서울특별시 종로구의 모든 동&#34;만&#34; 반환</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#headline-13">gRPC 호출</a>
+<ul>
+<li><a href="#headline-14">사용법</a>
 </li>
 </ul>
 </li>
