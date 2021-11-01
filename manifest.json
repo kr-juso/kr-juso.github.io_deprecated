@@ -1,6 +1,6 @@
 {
-  "name": "Juso",
-  "short_name": "Juso",
+  "name": "주소",
+  "short_name": "주소",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
